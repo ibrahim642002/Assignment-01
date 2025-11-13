@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <!-- Top Navigation -->
+    <RelativeLayout
+        android:id="@+id/nav"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize">
+
+        <TextView
+            android:layout_width="310dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/custom_button2"
+            android:layout_marginLeft="10dp" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:src="@drawable/img_33"
+            android:layout_margin="10dp"
+            android:layout_centerVertical="true" />
+
+        <EditText
+            android:id="@+id/searchInput"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:hint="Search users..."
+            android:textSize="18sp"
+            android:layout_marginLeft="60dp"
+            android:layout_centerVertical="true"
+            android:background="@android:color/transparent" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:src="@drawable/img_34"
+            android:layout_marginLeft="270dp"
+            android:layout_marginTop="5dp"
+            android:layout_centerVertical="true" />
+
+        <TextView
+            android:id="@+id/clearSearch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#8E3F42"
+            android:text="Clear"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="350dp"
+            android:textSize="18sp" />
+    </RelativeLayout>
+
+    <!-- Filter Tabs -->
+    <RelativeLayout
+        android:id="@+id/two"
+        android:layout_marginTop="5dp"
+        android:layout_below="@id/nav"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:weightSum="4">
+
+            <TextView
+                android:id="@+id/filterTop"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Top"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/filterAccount"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Account"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:gravity="center"
+                android:textColor="#8E3F42" />
+
+            <TextView
+                android:id="@+id/filterTags"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Tags"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/filterPlaces"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Places"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:gravity="center" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <!-- Search Results Container -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/two"
+        android:layout_marginTop="5dp">
+
+        <LinearLayout
+            android:id="@+id/searchResultsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <!-- Dynamic search results will be added here -->
+        </LinearLayout>
+
+    </ScrollView>
+
+    <!-- Bottom Navigation -->
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/img_37"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+</RelativeLayout>

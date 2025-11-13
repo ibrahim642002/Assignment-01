@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="8">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:gravity="center">
+            <TextView
+                android:id="@+id/logo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Socially"
+                android:gravity="center_horizontal"
+                android:layout_gravity="center"
+                android:textColor="#8E3F42"
+                android:textSize="50sp"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:gravity="center">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/img_3" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/sum3"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/name"
+                android:layout_marginTop="7dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="jacob_w"
+                android:textSize="25sp"
+                android:textStyle="bold"
+                android:gravity="center_horizontal"/>
+
+            <TextView
+                android:id="@+id/login"
+                android:layout_marginTop="25dp"
+                android:layout_width="380dp"
+                android:layout_height="80dp"
+                android:background="@drawable/custom_button"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:textSize="30sp"
+                android:textColor="@color/white"
+                android:text="Log in"/>
+
+            <TextView
+                android:id="@+id/sw"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="35dp"
+                android:textSize="25sp"
+                android:textColor="#8E3F42"
+                android:textStyle="bold"
+                android:gravity="center_horizontal"
+                android:text="Switch accounts" />
+        </LinearLayout>
+        
+        <LinearLayout
+            
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:textColor="#8E3F42"
+                android:text="Don't have an account? "
+                />
+
+            <TextView
+                android:id="@+id/signup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:textColor="#8E3F42"
+                android:text="Sign up"
+                android:textStyle="bold"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5"
+            android:gravity="center|bottom">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/img"
+                />
+        </LinearLayout>
+
+    </LinearLayout>
+</RelativeLayout>
+
