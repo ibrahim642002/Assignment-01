@@ -85,6 +85,8 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <activity android:name=".UserProfileActivity" />
+        <activity android:name=".FollowRequestsActivity" />
         <activity
             android:name=".login"
             android:exported="false" />
@@ -101,5 +103,4 @@
             </intent-filter>
         </activity>
     </application>
-
 </manifest>

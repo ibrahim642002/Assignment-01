@@ -81,6 +81,11 @@ class page_13 : AppCompatActivity() {
             openProfilePictureUpload()
         }
 
+        menuIcon.setOnClickListener {
+            val intent = Intent(this, page_15::class.java)
+            startActivity(intent)
+        }
+
         // Notification icon - open follow requests
         notificationIcon.setOnClickListener {
             openFollowRequests()

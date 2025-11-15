@@ -9,7 +9,6 @@ import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
@@ -21,6 +20,7 @@ class page_7 : AppCompatActivity() {
     private lateinit var database: FirebaseDatabase
     private lateinit var usersRef: DatabaseReference
     private lateinit var followsRef: DatabaseReference
+    private lateinit var followRequestsRef: DatabaseReference
 
     private lateinit var searchInput: EditText
     private lateinit var searchResultsContainer: LinearLayout
@@ -28,6 +28,7 @@ class page_7 : AppCompatActivity() {
     private lateinit var filterAccount: TextView
     private lateinit var filterTags: TextView
     private lateinit var filterPlaces: TextView
+    private lateinit var clearSearch: TextView
 
     private var currentFilter = "Account" // Default filter
 
@@ -39,18 +40,18 @@ class page_7 : AppCompatActivity() {
         database = FirebaseDatabase.getInstance("https://assignment01-7a5e4-default-rtdb.firebaseio.com/")
         usersRef = database.getReference("Users")
         followsRef = database.getReference("follows")
+        followRequestsRef = database.getReference("followRequests")
 
         // Initialize views
         searchInput = findViewById(R.id.searchInput)
+        searchResultsContainer = findViewById(R.id.searchResultsContainer)
         filterTop = findViewById(R.id.filterTop)
         filterAccount = findViewById(R.id.filterAccount)
         filterTags = findViewById(R.id.filterTags)
         filterPlaces = findViewById(R.id.filterPlaces)
+        clearSearch = findViewById(R.id.clearSearch)
 
-        // Convert search display to EditText (or use existing)
         setupSearch()
-
-        // Setup filters
         setupFilters()
     }
 
@@ -62,11 +63,18 @@ class page_7 : AppCompatActivity() {
                 val query = s.toString().trim()
                 if (query.length >= 2) {
                     searchUsers(query)
+                } else {
+                    clearSearchResults()
                 }
             }
 
             override fun afterTextChanged(s: Editable?) {}
         })
+
+        clearSearch.setOnClickListener {
+            searchInput.text.clear()
+            clearSearchResults()
+        }
     }
 
     private fun setupFilters() {
@@ -78,17 +86,21 @@ class page_7 : AppCompatActivity() {
         filterAccount.setOnClickListener {
             currentFilter = "Account"
             updateFilterUI()
-            searchUsers(searchInput.text.toString())
+            if (searchInput.text.toString().trim().length >= 2) {
+                searchUsers(searchInput.text.toString())
+            }
         }
 
         filterTags.setOnClickListener {
             currentFilter = "Tags"
             updateFilterUI()
+            Toast.makeText(this, "Tags search not implemented yet", Toast.LENGTH_SHORT).show()
         }
 
         filterPlaces.setOnClickListener {
             currentFilter = "Places"
             updateFilterUI()
+            Toast.makeText(this, "Places search not implemented yet", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -113,10 +125,14 @@ class page_7 : AppCompatActivity() {
 
         val currentUserId = mAuth.currentUser?.uid ?: return
 
-        usersRef.orderByChild("username").startAt(query).endAt(query + "\uf8ff")
+        // Search by username
+        usersRef.orderByChild("username")
+            .startAt(query.lowercase())
+            .endAt(query.lowercase() + "\uf8ff")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     clearSearchResults()
+                    var foundResults = false
 
                     for (userSnapshot in snapshot.children) {
                         val userId = userSnapshot.key ?: continue
@@ -128,20 +144,37 @@ class page_7 : AppCompatActivity() {
                         val profileImage = userSnapshot.child("profileImage").value?.toString() ?: ""
                         val isOnline = userSnapshot.child("isOnline").value as? Boolean ?: false
 
-                        addSearchResult(userId, username, "$firstName $lastName", profileImage, isOnline)
+                        // Check if username contains the query (case-insensitive)
+                        if (username.lowercase().contains(query.lowercase())) {
+                            addSearchResult(userId, username, "$firstName $lastName", profileImage, isOnline)
+                            foundResults = true
+                        }
+                    }
+
+                    if (!foundResults) {
+                        showNoResults()
                     }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
                     Log.e("Search", "Error searching users: ${error.message}")
+                    Toast.makeText(this@page_7, "Search failed: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             })
     }
 
     private fun clearSearchResults() {
-        // Clear the container where search results are displayed
-        val container = findViewById<LinearLayout>(R.id.searchResultsContainer)
-        container?.removeAllViews()
+        searchResultsContainer.removeAllViews()
+    }
+
+    private fun showNoResults() {
+        clearSearchResults()
+        val noResultsView = TextView(this)
+        noResultsView.text = "No users found"
+        noResultsView.textSize = 16f
+        noResultsView.setPadding(16, 32, 16, 32)
+        noResultsView.gravity = android.view.Gravity.CENTER
+        searchResultsContainer.addView(noResultsView)
     }
 
     private fun addSearchResult(userId: String, username: String, fullName: String, profileImage: String, isOnline: Boolean) {
@@ -174,12 +207,11 @@ class page_7 : AppCompatActivity() {
             openUserProfile(userId)
         }
 
-        val container = findViewById<LinearLayout>(R.id.searchResultsContainer)
-        container?.addView(resultView)
+        searchResultsContainer.addView(resultView)
     }
 
     private fun openUserProfile(userId: String) {
-        val intent = Intent(this, UserProfile::class.java)
+        val intent = Intent(this, UserProfileActivity::class.java)
         intent.putExtra("USER_ID", userId)
         startActivity(intent)
     }
