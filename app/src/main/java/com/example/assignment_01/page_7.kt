@@ -19,18 +19,11 @@ class page_7 : AppCompatActivity() {
     private lateinit var mAuth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
     private lateinit var usersRef: DatabaseReference
-    private lateinit var followsRef: DatabaseReference
-    private lateinit var followRequestsRef: DatabaseReference
 
     private lateinit var searchInput: EditText
     private lateinit var searchResultsContainer: LinearLayout
-    private lateinit var filterTop: TextView
     private lateinit var filterAccount: TextView
-    private lateinit var filterTags: TextView
-    private lateinit var filterPlaces: TextView
     private lateinit var clearSearch: TextView
-
-    private var currentFilter = "Account" // Default filter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,30 +32,34 @@ class page_7 : AppCompatActivity() {
         mAuth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance("https://assignment01-7a5e4-default-rtdb.firebaseio.com/")
         usersRef = database.getReference("Users")
-        followsRef = database.getReference("follows")
-        followRequestsRef = database.getReference("followRequests")
 
         // Initialize views
         searchInput = findViewById(R.id.searchInput)
         searchResultsContainer = findViewById(R.id.searchResultsContainer)
-        filterTop = findViewById(R.id.filterTop)
         filterAccount = findViewById(R.id.filterAccount)
-        filterTags = findViewById(R.id.filterTags)
-        filterPlaces = findViewById(R.id.filterPlaces)
         clearSearch = findViewById(R.id.clearSearch)
 
         setupSearch()
-        setupFilters()
+
+        // DEBUG: Show all users on load
+        loadAllUsers()
     }
 
     private fun setupSearch() {
+        // Load all users immediately when page opens
+        loadAllUsers()
+
         searchInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val query = s.toString().trim()
+                Log.d("SEARCH_DEBUG", "Searching for: '$query'")
+
                 if (query.length >= 2) {
                     searchUsers(query)
+                } else if (query.isEmpty()) {
+                    loadAllUsers() // Show all users when search is empty
                 } else {
                     clearSearchResults()
                 }
@@ -73,108 +70,105 @@ class page_7 : AppCompatActivity() {
 
         clearSearch.setOnClickListener {
             searchInput.text.clear()
-            clearSearchResults()
+            loadAllUsers()
         }
     }
 
-    private fun setupFilters() {
-        filterTop.setOnClickListener {
-            currentFilter = "Top"
-            updateFilterUI()
-        }
+    private fun loadAllUsers() {
+        Log.d("SEARCH_DEBUG", "Loading all users...")
+        val currentUserId = mAuth.currentUser?.uid ?: return
 
-        filterAccount.setOnClickListener {
-            currentFilter = "Account"
-            updateFilterUI()
-            if (searchInput.text.toString().trim().length >= 2) {
-                searchUsers(searchInput.text.toString())
+        usersRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                clearSearchResults()
+                var count = 0
+
+                Log.d("SEARCH_DEBUG", "Total users in database: ${snapshot.childrenCount}")
+
+                for (userSnapshot in snapshot.children) {
+                    val userId = userSnapshot.key ?: continue
+                    if (userId == currentUserId) continue
+
+                    val username = userSnapshot.child("username").value?.toString() ?: ""
+                    val firstName = userSnapshot.child("firstName").value?.toString() ?: ""
+                    val lastName = userSnapshot.child("lastName").value?.toString() ?: ""
+                    val profileImage = userSnapshot.child("profileImage").value?.toString() ?: ""
+                    val isOnline = userSnapshot.child("isOnline").value as? Boolean ?: false
+
+                    Log.d("SEARCH_DEBUG", "Found user: $username (ID: $userId)")
+
+                    addSearchResult(userId, username, "$firstName $lastName", profileImage, isOnline)
+                    count++
+                }
+
+                Log.d("SEARCH_DEBUG", "Displayed $count users")
+
+                if (count == 0) {
+                    showMessage("No other users found. Create another account to test!")
+                }
             }
-        }
 
-        filterTags.setOnClickListener {
-            currentFilter = "Tags"
-            updateFilterUI()
-            Toast.makeText(this, "Tags search not implemented yet", Toast.LENGTH_SHORT).show()
-        }
-
-        filterPlaces.setOnClickListener {
-            currentFilter = "Places"
-            updateFilterUI()
-            Toast.makeText(this, "Places search not implemented yet", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun updateFilterUI() {
-        // Reset all
-        filterTop.setTextColor(resources.getColor(android.R.color.black))
-        filterAccount.setTextColor(resources.getColor(android.R.color.black))
-        filterTags.setTextColor(resources.getColor(android.R.color.black))
-        filterPlaces.setTextColor(resources.getColor(android.R.color.black))
-
-        // Highlight selected
-        when (currentFilter) {
-            "Top" -> filterTop.setTextColor(resources.getColor(android.R.color.holo_red_dark))
-            "Account" -> filterAccount.setTextColor(resources.getColor(android.R.color.holo_red_dark))
-            "Tags" -> filterTags.setTextColor(resources.getColor(android.R.color.holo_red_dark))
-            "Places" -> filterPlaces.setTextColor(resources.getColor(android.R.color.holo_red_dark))
-        }
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("SEARCH_DEBUG", "Error: ${error.message}")
+                Toast.makeText(this@page_7, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun searchUsers(query: String) {
-        if (currentFilter != "Account") return
-
         val currentUserId = mAuth.currentUser?.uid ?: return
+        val lowerQuery = query.lowercase()
 
-        // Search by username
-        usersRef.orderByChild("username")
-            .startAt(query.lowercase())
-            .endAt(query.lowercase() + "\uf8ff")
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    clearSearchResults()
-                    var foundResults = false
+        Log.d("SEARCH_DEBUG", "Searching for: '$lowerQuery'")
 
-                    for (userSnapshot in snapshot.children) {
-                        val userId = userSnapshot.key ?: continue
-                        if (userId == currentUserId) continue // Skip current user
+        usersRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                clearSearchResults()
+                var foundResults = false
 
-                        val username = userSnapshot.child("username").value?.toString() ?: ""
-                        val firstName = userSnapshot.child("firstName").value?.toString() ?: ""
-                        val lastName = userSnapshot.child("lastName").value?.toString() ?: ""
-                        val profileImage = userSnapshot.child("profileImage").value?.toString() ?: ""
-                        val isOnline = userSnapshot.child("isOnline").value as? Boolean ?: false
+                for (userSnapshot in snapshot.children) {
+                    val userId = userSnapshot.key ?: continue
+                    if (userId == currentUserId) continue
 
-                        // Check if username contains the query (case-insensitive)
-                        if (username.lowercase().contains(query.lowercase())) {
-                            addSearchResult(userId, username, "$firstName $lastName", profileImage, isOnline)
-                            foundResults = true
-                        }
-                    }
+                    val username = userSnapshot.child("username").value?.toString() ?: ""
+                    val firstName = userSnapshot.child("firstName").value?.toString() ?: ""
+                    val lastName = userSnapshot.child("lastName").value?.toString() ?: ""
+                    val profileImage = userSnapshot.child("profileImage").value?.toString() ?: ""
+                    val isOnline = userSnapshot.child("isOnline").value as? Boolean ?: false
 
-                    if (!foundResults) {
-                        showNoResults()
+                    // Search in username (case-insensitive)
+                    if (username.lowercase().contains(lowerQuery)) {
+                        Log.d("SEARCH_DEBUG", "Match found: $username")
+                        addSearchResult(userId, username, "$firstName $lastName", profileImage, isOnline)
+                        foundResults = true
                     }
                 }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("Search", "Error searching users: ${error.message}")
-                    Toast.makeText(this@page_7, "Search failed: ${error.message}", Toast.LENGTH_SHORT).show()
+                if (!foundResults) {
+                    Log.d("SEARCH_DEBUG", "No results found for: $query")
+                    showMessage("No users found matching '$query'")
                 }
-            })
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("SEARCH_DEBUG", "Search error: ${error.message}")
+                Toast.makeText(this@page_7, "Search failed: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun clearSearchResults() {
         searchResultsContainer.removeAllViews()
     }
 
-    private fun showNoResults() {
+    private fun showMessage(message: String) {
         clearSearchResults()
-        val noResultsView = TextView(this)
-        noResultsView.text = "No users found"
-        noResultsView.textSize = 16f
-        noResultsView.setPadding(16, 32, 16, 32)
-        noResultsView.gravity = android.view.Gravity.CENTER
-        searchResultsContainer.addView(noResultsView)
+        val textView = TextView(this)
+        textView.text = message
+        textView.textSize = 16f
+        textView.setPadding(16, 32, 16, 32)
+        textView.gravity = android.view.Gravity.CENTER
+        searchResultsContainer.addView(textView)
     }
 
     private fun addSearchResult(userId: String, username: String, fullName: String, profileImage: String, isOnline: Boolean) {
@@ -195,7 +189,7 @@ class page_7 : AppCompatActivity() {
                 val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
                 profileImageView.setImageBitmap(bitmap)
             } catch (e: Exception) {
-                Log.e("Search", "Error loading profile image: ${e.message}")
+                Log.e("SEARCH_DEBUG", "Error loading image: ${e.message}")
             }
         }
 
@@ -204,6 +198,7 @@ class page_7 : AppCompatActivity() {
 
         // Click to view profile
         resultView.setOnClickListener {
+            Log.d("SEARCH_DEBUG", "Clicked on user: $username")
             openUserProfile(userId)
         }
 

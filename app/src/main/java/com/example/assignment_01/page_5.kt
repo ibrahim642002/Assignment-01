@@ -18,6 +18,8 @@ import com.google.firebase.database.FirebaseDatabase.*
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
+
+
 fun bitmapToBase64(bitmap: Bitmap): String {
     val baos = ByteArrayOutputStream()
     bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos)

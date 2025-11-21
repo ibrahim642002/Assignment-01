@@ -3,13 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:fitsSystemWindows="true"
+    >
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Top Navigation Bar -->
         <RelativeLayout
             android:id="@+id/nav"
             android:layout_width="match_parent"
@@ -198,50 +199,64 @@
             android:layout_height="match_parent"
             android:layout_below="@id/abc"
             android:orientation="horizontal"
-            android:weightSum="5">
+            android:weightSum="5"
+            android:layout_marginBottom="5dp"
+            >
 
             <ImageView
                 android:layout_width="0dp"
-                android:layout_height="30dp"
+                android:layout_height="25dp"
                 android:layout_weight="1"
                 android:src="@drawable/img_56"
                 android:layout_gravity="center"
-                android:layout_marginBottom="2dp"/>
+                android:adjustViewBounds="true"
+                android:scaleType="centerInside"
+                />
 
             <ImageView
                 android:id="@+id/search"
                 android:layout_width="0dp"
-                android:layout_height="30dp"
+                android:layout_height="25dp"
                 android:layout_weight="1"
                 android:src="@drawable/img_57"
                 android:layout_gravity="center"
-                android:layout_marginBottom="2dp"/>
+                android:adjustViewBounds="true"
+                android:scaleType="centerInside"
+                />
 
             <ImageView
                 android:layout_width="0dp"
-                android:layout_height="30dp"
+                android:layout_height="25dp"
                 android:layout_weight="1"
                 android:src="@drawable/img_58"
                 android:layout_gravity="center"
-                android:layout_marginBottom="2dp"/>
+                android:adjustViewBounds="true"
+                android:scaleType="centerInside"
+
+                />
 
             <ImageView
                 android:id="@+id/heart"
                 android:layout_width="0dp"
-                android:layout_height="30dp"
+                android:layout_height="25dp"
                 android:layout_weight="1"
                 android:src="@drawable/img_59"
                 android:layout_gravity="center"
-                android:layout_marginBottom="2dp"/>
+                android:adjustViewBounds="true"
+                android:scaleType="centerInside"
+
+                />
 
             <ImageView
                 android:id="@+id/profile"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="28dp"
                 android:layout_weight="1"
                 android:src="@drawable/img_94"
                 android:layout_gravity="center"
-                android:layout_marginBottom="2dp"/>
+                android:adjustViewBounds="true"
+                android:scaleType="centerInside"
+                />
         </LinearLayout>
 
     </RelativeLayout>

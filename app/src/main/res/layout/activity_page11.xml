@@ -636,8 +636,7 @@
 
         </LinearLayout>
     </ScrollView>
-
-    <!-- Bottom Navigation Bar (Using your Figma design) -->
+    
     <ImageView
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"

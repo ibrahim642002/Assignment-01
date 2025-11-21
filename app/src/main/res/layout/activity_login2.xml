@@ -49,6 +49,7 @@
             android:layout_centerHorizontal="true"
             android:hint="    Username"
             android:textColor="@color/black"
+            android:textColorHint="#A0A0A0"
             />
 
         <EditText
@@ -61,6 +62,7 @@
             android:layout_centerHorizontal="true"
             android:hint="    Password"
             android:textColor="@color/black"
+            android:textColorHint="#A0A0A0"
             />
 
         <TextView

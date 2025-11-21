@@ -17,7 +17,7 @@ class UserProfileActivity : AppCompatActivity() {
     private lateinit var database: FirebaseDatabase
     private lateinit var usersRef: DatabaseReference
     private lateinit var followsRef: DatabaseReference
-    private lateinit var followRequestsRef: DatabaseReference
+    private lateinit var notificationsRef: DatabaseReference
     private lateinit var postsRef: DatabaseReference
 
     private lateinit var profileImage: ImageView
@@ -33,9 +33,10 @@ class UserProfileActivity : AppCompatActivity() {
     private lateinit var photoGrid: LinearLayout
 
     private var targetUserId: String = ""
+    private var targetUsername: String = ""
     private var currentUserId: String = ""
+    private var currentUsername: String = ""
     private var isFollowing = false
-    private var isRequestPending = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +47,7 @@ class UserProfileActivity : AppCompatActivity() {
         database = FirebaseDatabase.getInstance("https://assignment01-7a5e4-default-rtdb.firebaseio.com/")
         usersRef = database.getReference("Users")
         followsRef = database.getReference("follows")
-        followRequestsRef = database.getReference("followRequests")
+        notificationsRef = database.getReference("notifications")
         postsRef = database.getReference("posts")
 
         targetUserId = intent.getStringExtra("USER_ID") ?: ""
@@ -58,6 +59,7 @@ class UserProfileActivity : AppCompatActivity() {
         }
 
         initViews()
+        loadCurrentUsername()
         loadUserProfile()
         checkFollowStatus()
         loadFollowCounts()
@@ -90,20 +92,26 @@ class UserProfileActivity : AppCompatActivity() {
         photoGrid = findViewById(R.id.photoGridContainer)
     }
 
+    private fun loadCurrentUsername() {
+        usersRef.child(currentUserId).child("username").get()
+            .addOnSuccessListener { snapshot ->
+                currentUsername = snapshot.value?.toString() ?: "User"
+            }
+    }
+
     private fun loadUserProfile() {
         usersRef.child(targetUserId).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val username = snapshot.child("username").value?.toString() ?: "User"
+                targetUsername = snapshot.child("username").value?.toString() ?: "User"
                 val firstName = snapshot.child("firstName").value?.toString() ?: ""
                 val lastName = snapshot.child("lastName").value?.toString() ?: ""
                 val bio = snapshot.child("bio").value?.toString() ?: "No bio yet"
                 val profileImageBase64 = snapshot.child("profileImage").value?.toString() ?: ""
 
-                usernameText.text = username
+                usernameText.text = targetUsername
                 fullNameText.text = "$firstName $lastName"
                 bioText.text = bio
 
-                // Load profile image (circular)
                 if (profileImageBase64.isNotEmpty()) {
                     try {
                         val imageBytes = Base64.decode(profileImageBase64, Base64.DEFAULT)
@@ -122,31 +130,10 @@ class UserProfileActivity : AppCompatActivity() {
     }
 
     private fun checkFollowStatus() {
-        // Check if already following
         followsRef.child(currentUserId).child("following").child(targetUserId)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
+            .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     isFollowing = snapshot.exists()
-                    updateFollowButton()
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("UserProfile", "Error: ${error.message}")
-                }
-            })
-
-        // Check if follow request is pending
-        followRequestsRef.orderByChild("fromUserId").equalTo(currentUserId)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    isRequestPending = false
-                    for (requestSnapshot in snapshot.children) {
-                        val request = requestSnapshot.getValue(FollowRequest::class.java)
-                        if (request != null && request.toUserId == targetUserId && request.status == "pending") {
-                            isRequestPending = true
-                            break
-                        }
-                    }
                     updateFollowButton()
                 }
 
@@ -157,98 +144,118 @@ class UserProfileActivity : AppCompatActivity() {
     }
 
     private fun updateFollowButton() {
-        when {
-            isFollowing -> {
-                followButton.text = "Following"
-                followButton.setBackgroundColor(resources.getColor(android.R.color.darker_gray))
-                messageButton.visibility = View.VISIBLE
-            }
-            isRequestPending -> {
-                followButton.text = "Requested"
-                followButton.setBackgroundColor(resources.getColor(android.R.color.darker_gray))
-                messageButton.visibility = View.GONE
-            }
-            else -> {
-                followButton.text = "Follow"
-                followButton.setBackgroundColor(resources.getColor(android.R.color.holo_blue_dark))
-                messageButton.visibility = View.GONE
-            }
+        if (isFollowing) {
+            followButton.text = "Following"
+            followButton.setBackgroundColor(resources.getColor(android.R.color.darker_gray))
+            messageButton.visibility = View.VISIBLE
+        } else {
+            followButton.text = "Follow"
+            followButton.setBackgroundColor(resources.getColor(android.R.color.holo_blue_dark))
+            messageButton.visibility = View.GONE
         }
     }
 
     private fun handleFollowAction() {
-        when {
-            isFollowing -> {
-                // Unfollow
-                unfollowUser()
-            }
-            isRequestPending -> {
-                Toast.makeText(this, "Follow request already sent", Toast.LENGTH_SHORT).show()
-            }
-            else -> {
-                // Send follow request
-                sendFollowRequest()
-            }
+        if (isFollowing) {
+            unfollowUser()
+        } else {
+            followUser()
         }
     }
 
-    private fun sendFollowRequest() {
-        val requestId = followRequestsRef.push().key ?: return
+    private fun followUser() {
+        // Add to following/followers immediately (no request needed)
+        val updates = mutableMapOf<String, Any>()
+        updates["follows/$currentUserId/following/$targetUserId"] = true
+        updates["follows/$targetUserId/followers/$currentUserId"] = true
 
-        usersRef.child(currentUserId).get().addOnSuccessListener { snapshot ->
-            val currentUsername = snapshot.child("username").value?.toString() ?: "User"
+        database.reference.updateChildren(updates)
+            .addOnSuccessListener {
+                Toast.makeText(this, "Following $targetUsername", Toast.LENGTH_SHORT).show()
 
-            val followRequest = FollowRequest(
-                requestId = requestId,
-                fromUserId = currentUserId,
-                fromUsername = currentUsername,
-                toUserId = targetUserId,
-                timestamp = System.currentTimeMillis(),
-                status = "pending"
-            )
+                // Send notification to target user
+                sendFollowNotification()
 
-            followRequestsRef.child(requestId).setValue(followRequest)
-                .addOnSuccessListener {
-                    Toast.makeText(this, "Follow request sent!", Toast.LENGTH_SHORT).show()
-                    isRequestPending = true
-                    updateFollowButton()
-                }
-                .addOnFailureListener {
-                    Toast.makeText(this, "Failed to send request", Toast.LENGTH_SHORT).show()
-                }
-        }
+                // Send notification to current user
+                sendSelfNotification()
+
+                isFollowing = true
+                updateFollowButton()
+                loadFollowCounts()
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to follow", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun unfollowUser() {
-        // Remove from following/followers
-        followsRef.child(currentUserId).child("following").child(targetUserId).removeValue()
-        followsRef.child(targetUserId).child("followers").child(currentUserId).removeValue()
+        val updates = mutableMapOf<String, Any?>()
+        updates["follows/$currentUserId/following/$targetUserId"] = null
+        updates["follows/$targetUserId/followers/$currentUserId"] = null
+
+        database.reference.updateChildren(updates)
             .addOnSuccessListener {
-                Toast.makeText(this, "Unfollowed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Unfollowed $targetUsername", Toast.LENGTH_SHORT).show()
                 isFollowing = false
                 updateFollowButton()
                 loadFollowCounts()
             }
     }
 
+    private fun sendFollowNotification() {
+        val notificationId = notificationsRef.push().key ?: return
+
+        val notification = mapOf(
+            "notificationId" to notificationId,
+            "toUserId" to targetUserId,
+            "fromUserId" to currentUserId,
+            "fromUsername" to currentUsername,
+            "type" to "follow",
+            "message" to "$currentUsername started following you",
+            "timestamp" to System.currentTimeMillis(),
+            "isRead" to false
+        )
+
+        notificationsRef.child(targetUserId).child(notificationId).setValue(notification)
+            .addOnSuccessListener {
+                Log.d("Notification", "Follow notification sent to $targetUsername")
+            }
+    }
+
+    private fun sendSelfNotification() {
+        val notificationId = notificationsRef.push().key ?: return
+
+        val notification = mapOf(
+            "notificationId" to notificationId,
+            "toUserId" to currentUserId,
+            "fromUserId" to targetUserId,
+            "fromUsername" to targetUsername,
+            "type" to "following",
+            "message" to "You started following $targetUsername",
+            "timestamp" to System.currentTimeMillis(),
+            "isRead" to false
+        )
+
+        notificationsRef.child(currentUserId).child(notificationId).setValue(notification)
+            .addOnSuccessListener {
+                Log.d("Notification", "Self notification created")
+            }
+    }
+
     private fun loadFollowCounts() {
-        // Followers count
         followsRef.child(targetUserId).child("followers")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     followersCountText.text = snapshot.childrenCount.toString()
                 }
-
                 override fun onCancelled(error: DatabaseError) {}
             })
 
-        // Following count
         followsRef.child(targetUserId).child("following")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     followingCountText.text = snapshot.childrenCount.toString()
                 }
-
                 override fun onCancelled(error: DatabaseError) {}
             })
     }
@@ -259,7 +266,6 @@ class UserProfileActivity : AppCompatActivity() {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     postsCountText.text = snapshot.childrenCount.toString()
 
-                    // Display posts in grid (simplified - you can enhance this)
                     for (postSnapshot in snapshot.children) {
                         val post = postSnapshot.getValue(Post::class.java)
                         if (post != null) {
@@ -267,7 +273,6 @@ class UserProfileActivity : AppCompatActivity() {
                         }
                     }
                 }
-
                 override fun onCancelled(error: DatabaseError) {}
             })
     }
@@ -296,13 +301,9 @@ class UserProfileActivity : AppCompatActivity() {
             return
         }
 
-        usersRef.child(targetUserId).get().addOnSuccessListener { snapshot ->
-            val username = snapshot.child("username").value?.toString() ?: "User"
-
-            val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra("USER_ID", targetUserId)
-            intent.putExtra("USER_NAME", username)
-            startActivity(intent)
-        }
+        val intent = Intent(this, ChatActivity::class.java)
+        intent.putExtra("USER_ID", targetUserId)
+        intent.putExtra("USER_NAME", targetUsername)
+        startActivity(intent)
     }
 }

@@ -3,214 +3,212 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    android:id="@+id/main"
-    >
+    android:id="@+id/main">
+
+    <!-- Search bar -->
     <RelativeLayout
-        android:id="@+id/search"
+        android:id="@+id/topSearchBar"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize" >
+        android:layout_height="?actionBarSize">
 
         <EditText
+            android:id="@+id/search"
+            android:layout_marginLeft="15dp"
             android:layout_width="300dp"
             android:layout_height="match_parent"
             android:background="@drawable/custom_button2"
+            android:hint="    Search"
             android:textColorHint="#8E3F42"
-            android:hint="    Search" />
+            android:textColor="@color/black"
+            />
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@+id/searchIconTop"
+            android:layout_width="55dp"
+            android:layout_height="80dp"
             android:src="@drawable/img_22"
-            android:layout_alignParentEnd="true" />
-
+            android:layout_alignParentEnd="true"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside"/>
     </RelativeLayout>
 
+    <!-- Buttons Row -->
     <LinearLayout
         android:id="@+id/buttons"
+        android:layout_below="@id/topSearchBar"
         android:layout_width="match_parent"
         android:layout_height="80dp"
-        android:orientation="horizontal"
-        android:layout_below="@id/search"
-        android:weightSum="5"
         android:gravity="center"
-        >
+        android:orientation="horizontal"
+        android:weightSum="5">
 
+        <TextView
+            android:adjustViewBounds="true"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Shop"
+            android:textColor="#8E3F42"
+            android:textStyle="bold"
+            android:background="@drawable/custom_button2" />
 
-        <EditText
+        <TextView
+            android:adjustViewBounds="true"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:background="@drawable/custom_button2"
-            android:textStyle="bold"
-            android:text=" Shop"
+            android:gravity="center"
+            android:text="Style"
             android:textColor="#8E3F42"
-            android:gravity="center"
-            />
-        <EditText
+            android:textStyle="bold"
+            android:background="@drawable/custom_button2" />
+
+        <TextView
+            android:adjustViewBounds="true"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:background="@drawable/custom_button2"
-            android:textStyle="bold"
-            android:text=" Style"
+            android:gravity="center"
+            android:text="Sports"
             android:textColor="#8E3F42"
-            android:gravity="center"
-            />
-        <EditText
+            android:textStyle="bold"
+            android:background="@drawable/custom_button2" />
+
+        <TextView
+            android:adjustViewBounds="true"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:background="@drawable/custom_button2"
-            android:textStyle="bold"
-            android:text=" Sports"
             android:gravity="center"
-            android:textColor="#8E3F42" />
-        <EditText
+            android:text="Auto"
+            android:textColor="#8E3F42"
+            android:textStyle="bold"
+            android:background="@drawable/custom_button2" />
+
+        <TextView
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:background="@drawable/custom_button2"
-            android:textStyle="bold"
-            android:text=" Auto"
             android:gravity="center"
-            android:textColor="#8E3F42" />
-        <EditText
+            android:text="Music"
+            android:textColor="#8E3F42"
+            android:adjustViewBounds="true"
             android:textStyle="bold"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/custom_button2"
-            android:text=" Music"
-            android:gravity="center"
-            android:textColor="#8E3F42" />
+            android:background="@drawable/custom_button2" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/pics"
+    <!-- GRID of Images -->
+    <GridLayout
+        android:id="@+id/exploreGrid"
         android:layout_below="@id/buttons"
         android:layout_width="match_parent"
-        android:layout_height="400dp"
-        android:weightSum="2"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content"
+        android:columnCount="3">
 
-        <LinearLayout
-            android:layout_weight="0.75"
+        <ImageView
             android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:weightSum="2"
-            android:orientation="vertical">
+            android:layout_height="120dp"
+            android:layout_columnWeight="1"
+            android:src="@drawable/img_26"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop" />
 
-            <ImageView
-                android:layout_weight="1"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:scaleType="fitXY"
-                android:src="@drawable/img_23" />
-
-            <ImageView
-                android:layout_weight="1"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:scaleType="fitXY"
-                android:src="@drawable/img_24" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_weight="1.25"
+        <ImageView
             android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="120dp"
+            android:layout_columnWeight="1"
+            android:src="@drawable/img_27"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop" />
 
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/img_25"
-                android:scaleType="fitXY"/>
-        </LinearLayout>
-    </LinearLayout>
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_columnWeight="1"
+            android:src="@drawable/img_28"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop" />
 
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_columnWeight="1"
+            android:src="@drawable/img_29"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_columnWeight="1"
+            android:src="@drawable/img_30"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_columnWeight="1"
+            android:src="@drawable/img_31"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop" />
+    </GridLayout>
+
+    <!-- Bottom Navigation -->
     <LinearLayout
-        android:layout_below="@id/pics"
+        android:id="@+id/bottomNav"
+        android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:weightSum="3"
-        android:orientation="vertical" >
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:weightSum="5">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1.35"
-            android:weightSum="3"
-            android:orientation="horizontal"
-            >
-            <ImageView
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:src="@drawable/img_26"
-                android:scaleType="fitXY"
-                />
+        <ImageView
+            android:id="@+id/home"
+            android:layout_width="0dp"
+            android:layout_height="25dp"
+            android:layout_weight="1"
+            android:src="@drawable/img_56"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside" />
 
-            <ImageView
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:src="@drawable/img_27"
-                android:scaleType="fitXY"
-                />
+        <ImageView
+            android:id="@+id/searchBottom"
+            android:layout_width="0dp"
+            android:layout_height="25dp"
+            android:layout_weight="1"
+            android:src="@drawable/img_57"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside" />
 
-            <ImageView
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:src="@drawable/img_28"
-                android:scaleType="fitXY"
-                />
+        <ImageView
+            android:id="@+id/reels"
+            android:layout_width="0dp"
+            android:layout_height="25dp"
+            android:layout_weight="1"
+            android:src="@drawable/img_58"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside" />
 
-        </LinearLayout>
+        <ImageView
+            android:id="@+id/heart"
+            android:layout_width="0dp"
+            android:layout_height="25dp"
+            android:layout_weight="1"
+            android:src="@drawable/img_59"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1.25"
-            android:weightSum="3"
-            android:orientation="horizontal"
-            >
-            <ImageView
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:src="@drawable/img_29"
-                android:scaleType="fitXY"
-                />
-
-            <ImageView
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:src="@drawable/img_30"
-                android:scaleType="fitXY"
-                />
-
-            <ImageView
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:src="@drawable/img_31"
-                android:scaleType="fitXY"
-                />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.70" >
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/img_32" />
-        </LinearLayout>
+        <ImageView
+            android:id="@+id/profile"
+            android:layout_width="0dp"
+            android:layout_height="28dp"
+            android:layout_weight="1"
+            android:src="@drawable/img_94"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside" />
     </LinearLayout>
+
 </RelativeLayout>
