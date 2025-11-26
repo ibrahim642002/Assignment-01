@@ -60,6 +60,15 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("io.agora.rtc:full-sdk:4.3.0")
 
+    // OkHttp for REST API
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+// Coroutines for async operations
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+// FCM (keep existing)
+    implementation("com.google.firebase:firebase-messaging:23.4.0")
+// WorkManager for offline queue processing
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

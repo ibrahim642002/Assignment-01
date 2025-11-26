@@ -5,7 +5,9 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="8dp">
+    android:padding="8dp"
+    android:fitsSystemWindows="true"
+    >
 
     <!-- Story Circle with Ring -->
     <androidx.cardview.widget.CardView

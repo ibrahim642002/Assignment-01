@@ -4,7 +4,9 @@
     android:layout_height="wrap_content"
     android:padding="12dp"
     android:layout_marginBottom="8dp"
-    android:background="@drawable/custom_button2">
+    android:background="@drawable/custom_button2"
+    android:fitsSystemWindows="true"
+    >
 
     <ImageView
         android:id="@+id/profileImage"

@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:id="@+id/intro"
     android:background="@color/white"
+    android:fitsSystemWindows="true"
     >
     <RelativeLayout
         android:id="@+id/navbar"
