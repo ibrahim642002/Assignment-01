@@ -1,14 +1,12 @@
 package com.example.assignment_01
 
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Base64
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.widget.*
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
@@ -18,9 +16,11 @@ class page_11 : AppCompatActivity() {
     private lateinit var database: FirebaseDatabase
     private lateinit var notificationsRef: DatabaseReference
     private lateinit var usersRef: DatabaseReference
+    private lateinit var followsRef: DatabaseReference
 
-    private lateinit var scrollView: ScrollView
-    private lateinit var notificationsContainer: LinearLayout
+    private lateinit var notificationsRecyclerView: RecyclerView
+    private lateinit var notificationAdapter: NotificationAdapter
+    private val notificationsList = mutableListOf<Notification>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,16 +30,24 @@ class page_11 : AppCompatActivity() {
         database = FirebaseDatabase.getInstance("https://assignment01-7a5e4-default-rtdb.firebaseio.com/")
         notificationsRef = database.getReference("notifications")
         usersRef = database.getReference("Users")
+        followsRef = database.getReference("follows")
 
-        // Find the ScrollView and the first LinearLayout inside it
-        scrollView = findViewById(R.id.scrollView)
-        notificationsContainer = scrollView.findViewById<LinearLayout>(R.id.scrollView)
-            .getChildAt(0) as LinearLayout
+        // Initialize RecyclerView
+        notificationsRecyclerView = findViewById(R.id.notificationsRecyclerView)
+        notificationsRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        // Clear all static notifications
-        notificationsContainer.removeAllViews()
+        notificationAdapter = NotificationAdapter(
+            notificationsList,
+            onFollowBackClick = { notification ->
+                followBackUser(notification)
+            },
+            onNotificationClick = { notification ->
+                handleNotificationClick(notification)
+            }
+        )
+        notificationsRecyclerView.adapter = notificationAdapter
 
-        // Load real notifications
+        // Load notifications
         loadNotifications()
     }
 
@@ -50,25 +58,30 @@ class page_11 : AppCompatActivity() {
             .orderByChild("timestamp")
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    notificationsContainer.removeAllViews()
+                    val notifications = mutableListOf<Notification>()
 
-                    val notifications = mutableListOf<Map<String, Any?>>()
+                    for (notificationSnapshot in snapshot.children) {
+                        val notification = notificationSnapshot.getValue(Notification::class.java)
+                        if (notification != null) {
+                            // Load user profile image for each notification
+                            loadUserProfileImage(notification) { updatedNotification ->
+                                notifications.add(updatedNotification)
 
-                    for (notifSnapshot in snapshot.children) {
-                        val notif = notifSnapshot.value as? Map<String, Any?> ?: continue
-                        notifications.add(notif)
-                    }
-
-                    // Show newest first
-                    notifications.sortByDescending { it["timestamp"] as? Long ?: 0L }
-
-                    if (notifications.isEmpty()) {
-                        showNoNotifications()
-                    } else {
-                        notifications.forEach { notif ->
-                            addNotificationView(notif)
+                                // Sort by newest first after all loaded
+                                if (notifications.size == snapshot.childrenCount.toInt()) {
+                                    notifications.sortByDescending { it.timestamp }
+                                    notificationAdapter.updateNotifications(notifications)
+                                }
+                            }
                         }
                     }
+
+                    if (snapshot.childrenCount == 0L) {
+                        // No notifications
+                        notificationAdapter.updateNotifications(emptyList())
+                    }
+
+                    Log.d("Notifications", "Loaded ${snapshot.childrenCount} notifications")
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -78,156 +91,87 @@ class page_11 : AppCompatActivity() {
             })
     }
 
-    private fun showNoNotifications() {
-        val cardView = androidx.cardview.widget.CardView(this)
-        cardView.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply {
-            setMargins(0, 0, 0, 16)
-        }
-        cardView.cardElevation = 0f
-        cardView.setCardBackgroundColor(resources.getColor(android.R.color.white))
-
-        val textView = TextView(this)
-        textView.text = "No notifications yet\n\nFollow someone to get started!"
-        textView.textSize = 16f
-        textView.setPadding(32, 64, 32, 64)
-        textView.gravity = android.view.Gravity.CENTER
-        textView.setTextColor(resources.getColor(android.R.color.darker_gray))
-
-        cardView.addView(textView)
-        notificationsContainer.addView(cardView)
-    }
-
-    private fun addNotificationView(notification: Map<String, Any?>) {
-        val cardView = androidx.cardview.widget.CardView(this)
-        cardView.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply {
-            setMargins(0, 0, 0, 8)
-        }
-        cardView.cardElevation = 0f
-        cardView.setCardBackgroundColor(resources.getColor(android.R.color.white))
-
-        val mainLayout = LinearLayout(this)
-        mainLayout.orientation = LinearLayout.HORIZONTAL
-        mainLayout.setPadding(24, 24, 24, 24)
-        mainLayout.gravity = android.view.Gravity.CENTER_VERTICAL
-
-        // Profile Image (Circular)
-        val profileCardView = androidx.cardview.widget.CardView(this)
-        profileCardView.layoutParams = LinearLayout.LayoutParams(80, 80)
-        profileCardView.radius = 40f
-        profileCardView.cardElevation = 2f
-
-        val profileImage = ImageView(this)
-        profileImage.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.MATCH_PARENT
-        )
-        profileImage.scaleType = ImageView.ScaleType.CENTER_CROP
-        profileCardView.addView(profileImage)
-
-        // Text content
-        val textLayout = LinearLayout(this)
-        textLayout.orientation = LinearLayout.VERTICAL
-        textLayout.layoutParams = LinearLayout.LayoutParams(
-            0,
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            1f
-        ).apply {
-            setMargins(24, 0, 24, 0)
-        }
-
-        val messageText = TextView(this)
-        messageText.text = notification["message"]?.toString() ?: ""
-        messageText.textSize = 14f
-        messageText.setTextColor(resources.getColor(android.R.color.black))
-
-        val timeText = TextView(this)
-        val timestamp = notification["timestamp"] as? Long ?: 0L
-        timeText.text = getTimeAgo(timestamp)
-        timeText.textSize = 12f
-        timeText.setTextColor(resources.getColor(android.R.color.darker_gray))
-        timeText.setPadding(0, 8, 0, 0)
-
-        textLayout.addView(messageText)
-        textLayout.addView(timeText)
-
-        // Assemble layout
-        mainLayout.addView(profileCardView)
-        mainLayout.addView(textLayout)
-
-        cardView.addView(mainLayout)
-
-        // Load profile image
-        val fromUserId = notification["fromUserId"]?.toString() ?: ""
-        loadUserImage(fromUserId, profileImage)
-
-        // Set background color for unread
-        val isRead = notification["isRead"] as? Boolean ?: false
-        if (!isRead) {
-            cardView.setCardBackgroundColor(resources.getColor(android.R.color.holo_blue_light))
-        }
-
-        // Click to mark as read and view profile
-        cardView.setOnClickListener {
-            markAsRead(notification["notificationId"]?.toString() ?: "")
-            openUserProfile(fromUserId)
-        }
-
-        notificationsContainer.addView(cardView)
-    }
-
-    private fun loadUserImage(userId: String, imageView: ImageView) {
-        usersRef.child(userId).child("profileImage").get()
+    private fun loadUserProfileImage(notification: Notification, callback: (Notification) -> Unit) {
+        usersRef.child(notification.fromUserId).get()
             .addOnSuccessListener { snapshot ->
-                val profileImageBase64 = snapshot.value?.toString() ?: ""
-                if (profileImageBase64.isNotEmpty()) {
-                    try {
-                        val imageBytes = Base64.decode(profileImageBase64, Base64.DEFAULT)
-                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                        imageView.setImageBitmap(bitmap)
-                    } catch (e: Exception) {
-                        Log.e("Notifications", "Error loading image: ${e.message}")
-                        imageView.setImageResource(R.drawable.img_3)
-                    }
-                } else {
-                    imageView.setImageResource(R.drawable.img_3)
-                }
+                val profileImage = snapshot.child("profileImage").value?.toString() ?: ""
+                val updatedNotification = notification.copy(fromUserProfileImage = profileImage)
+                callback(updatedNotification)
             }
             .addOnFailureListener {
-                imageView.setImageResource(R.drawable.img_3)
+                callback(notification)
             }
     }
 
-    private fun markAsRead(notificationId: String) {
+    private fun followBackUser(notification: Notification) {
         val currentUserId = mAuth.currentUser?.uid ?: return
-        if (notificationId.isNotEmpty()) {
-            notificationsRef.child(currentUserId).child(notificationId).child("isRead").setValue(true)
-        }
+        val targetUserId = notification.fromUserId
+
+        // Check if already following
+        followsRef.child(currentUserId).child("following").child(targetUserId).get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    Toast.makeText(this, "Already following ${notification.fromUsername}", Toast.LENGTH_SHORT).show()
+                } else {
+                    // Follow the user
+                    val updates = mutableMapOf<String, Any>()
+                    updates["follows/$currentUserId/following/$targetUserId"] = true
+                    updates["follows/$targetUserId/followers/$currentUserId"] = true
+
+                    database.reference.updateChildren(updates)
+                        .addOnSuccessListener {
+                            Toast.makeText(this, "Following ${notification.fromUsername}", Toast.LENGTH_SHORT).show()
+
+                            // Send notification back
+                            sendFollowNotification(targetUserId, notification.fromUsername)
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(this, "Failed to follow", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            }
     }
 
-    private fun openUserProfile(userId: String) {
-        if (userId.isNotEmpty()) {
-            val intent = Intent(this, UserProfileActivity::class.java)
-            intent.putExtra("USER_ID", userId)
-            startActivity(intent)
-        }
+    private fun sendFollowNotification(targetUserId: String, targetUsername: String) {
+        val currentUserId = mAuth.currentUser?.uid ?: return
+
+        usersRef.child(currentUserId).child("username").get()
+            .addOnSuccessListener { snapshot ->
+                val currentUsername = snapshot.value?.toString() ?: "User"
+
+                val notificationId = notificationsRef.push().key ?: return@addOnSuccessListener
+
+                val notification = mapOf(
+                    "notificationId" to notificationId,
+                    "toUserId" to targetUserId,
+                    "fromUserId" to currentUserId,
+                    "fromUsername" to currentUsername,
+                    "type" to "follow",
+                    "message" to "$currentUsername started following you",
+                    "timestamp" to System.currentTimeMillis(),
+                    "isRead" to false
+                )
+
+                notificationsRef.child(targetUserId).child(notificationId).setValue(notification)
+            }
     }
 
-    private fun getTimeAgo(timestamp: Long): String {
-        val now = System.currentTimeMillis()
-        val diff = now - timestamp
+    private fun handleNotificationClick(notification: Notification) {
+        // Mark as read
+        notificationsRef.child(mAuth.currentUser?.uid ?: return)
+            .child(notification.notificationId)
+            .child("isRead")
+            .setValue(true)
 
-        return when {
-            diff < 60000 -> "Just now"
-            diff < 3600000 -> "${diff / 60000}m ago"
-            diff < 86400000 -> "${diff / 3600000}h ago"
-            diff < 604800000 -> "${diff / 86400000}d ago"
-            else -> "${diff / 604800000}w ago"
+        // Navigate based on notification type
+        when (notification.type) {
+            "follow" -> {
+                // Open user profile
+                val intent = Intent(this, UserProfileActivity::class.java)
+                intent.putExtra("USER_ID", notification.fromUserId)
+                startActivity(intent)
+            }
+            // Add more cases for other notification types
         }
     }
 }

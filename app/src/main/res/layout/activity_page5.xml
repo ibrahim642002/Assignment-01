@@ -41,56 +41,23 @@
                 android:layout_alignParentEnd="true"/>
         </RelativeLayout>
 
-        <!-- Stories Section -->
-        <RelativeLayout
-            android:id="@+id/stories"
+        <!-- NEW Stories RecyclerView - Horizontal Scroll -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/storiesRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="100dp"
             android:layout_below="@id/nav"
-            android:layout_marginTop="20dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:orientation="horizontal"
-                android:weightSum="4">
-
-                <ImageView
-                    android:id="@+id/you"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:src="@drawable/img_7" />
-
-                <ImageView
-                    android:layout_width="0dp"
-                    android:id="@+id/you1"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:src="@drawable/img_8" />
-
-                <ImageView
-                    android:id="@+id/you2"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:src="@drawable/img_9" />
-
-                <ImageView
-                    android:id="@+id/you3"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:src="@drawable/img_10" />
-            </LinearLayout>
-        </RelativeLayout>
+            android:layout_marginTop="8dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:clipToPadding="false" />
 
         <!-- Post Header -->
         <RelativeLayout
             android:id="@+id/aaa"
             android:layout_width="match_parent"
             android:layout_height="?actionBarSize"
-            android:layout_below="@id/stories"
+            android:layout_below="@id/storiesRecyclerView"
             android:layout_marginTop="10dp">
 
             <ImageView

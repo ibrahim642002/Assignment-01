@@ -12,13 +12,12 @@ import android.util.Log
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import com.google.firebase.database.FirebaseDatabase.*
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
-
-
 
 fun bitmapToBase64(bitmap: Bitmap): String {
     val baos = ByteArrayOutputStream()
@@ -32,40 +31,43 @@ class page_5 : AppCompatActivity() {
     private lateinit var mAuth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
     private lateinit var storiesRef: DatabaseReference
+    private lateinit var followsRef: DatabaseReference
+    private lateinit var usersRef: DatabaseReference
 
-    // Story circle ImageViews
-    private lateinit var yourStory: ImageView
-    private lateinit var story1: ImageView
-    private lateinit var story2: ImageView
-    private lateinit var story3: ImageView
+    private lateinit var storiesRecyclerView: RecyclerView
+    private lateinit var storyCircleAdapter: StoryCircleAdapter
+    private val storyCirclesList = mutableListOf<StoryCircle>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_page5)
 
         mAuth = FirebaseAuth.getInstance()
-        database = getInstance("https://assignment01-7a5e4-default-rtdb.firebaseio.com/")
+        database = FirebaseDatabase.getInstance("https://assignment01-7a5e4-default-rtdb.firebaseio.com/")
         storiesRef = database.getReference("stories")
+        followsRef = database.getReference("follows")
+        usersRef = database.getReference("Users")
 
-        // Initialize story circles
-        yourStory = findViewById(R.id.you)
-        story1 = findViewById(R.id.you1)
-        story2 = findViewById(R.id.you2)
-        story3 = findViewById(R.id.you3)
+        // Initialize RecyclerView for stories
+        storiesRecyclerView = findViewById(R.id.storiesRecyclerView)
+        storiesRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+
+        storyCircleAdapter = StoryCircleAdapter(storyCirclesList) { storyCircle ->
+            if (storyCircle.stories.isNotEmpty()) {
+                viewUserStories(storyCircle.stories)
+            } else {
+                // If it's current user with no stories, open gallery
+                if (storyCircle.userId == mAuth.currentUser?.uid) {
+                    openGallery()
+                }
+            }
+        }
+        storiesRecyclerView.adapter = storyCircleAdapter
 
         val searchbtn = findViewById<ImageView>(R.id.search)
         val msgbtn = findViewById<ImageView>(R.id.msg)
-        val profilebtn=findViewById<ImageView>(R.id.profile)
-        val heartbtn=findViewById<ImageView>(R.id.heart)
-
-
-        // Your story circle click
-        yourStory.setOnClickListener {
-            handleYourStoryClick()
-        }
-
-        // Load and display stories
-        loadStories()
+        val profilebtn = findViewById<ImageView>(R.id.profile)
+        val heartbtn = findViewById<ImageView>(R.id.heart)
 
         searchbtn.setOnClickListener {
             val intent = Intent(this, page_6::class.java)
@@ -88,6 +90,7 @@ class page_5 : AppCompatActivity() {
             startActivity(intent)
         }
 
+        loadFollowingStories()
         deleteExpiredStories()
 
         PresenceManager.initialize("https://assignment01-7a5e4-default-rtdb.firebaseio.com/")
@@ -99,81 +102,143 @@ class page_5 : AppCompatActivity() {
         PresenceManager.setUserOffline()
     }
 
-    private fun loadPosts() {
-        val postsRef = database.getReference("posts")
+    private fun loadFollowingStories() {
+        val currentUserId = mAuth.currentUser?.uid ?: return
 
-        postsRef.orderByChild("timestamp").limitToLast(10)
+        followsRef.child(currentUserId).child("following")
             .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val posts = mutableListOf<Post>()
+                override fun onDataChange(followingSnapshot: DataSnapshot) {
+                    val followingUserIds = mutableListOf<String>()
 
-                    for (postSnapshot in snapshot.children) {
-                        val post = postSnapshot.getValue(Post::class.java)
-                        if (post != null) {
-                            posts.add(post)
+                    followingUserIds.add(currentUserId)
+
+                    for (userSnapshot in followingSnapshot.children) {
+                        val userId = userSnapshot.key
+                        if (userId != null) {
+                            followingUserIds.add(userId)
                         }
                     }
 
-                    // Reverse to show newest first
-                    posts.reverse()
-
-                    // Display posts in your feed
-                    displayPosts(posts)
+                    Log.d("Stories", "Following ${followingUserIds.size - 1} users")
+                    loadStoriesForUsers(followingUserIds)
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Log.e("Posts", "Error loading posts: ${error.message}")
+                    Log.e("Stories", "Error loading following: ${error.message}")
                 }
             })
     }
 
-    private fun displayPosts(posts: List<Post>) {
-        // You can use RecyclerView or display in existing ImageViews
-        // For now, let's update the main post image if posts exist
-        if (posts.isNotEmpty()) {
-            val latestPost = posts[0]
-            val postImage = findViewById<ImageView>(R.id.pic) // Your main post image
+    private fun loadStoriesForUsers(userIds: List<String>) {
+        storiesRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val storiesMap = mutableMapOf<String, MutableList<Story>>()
 
-            try {
-                val imageBytes = Base64.decode(latestPost.imageUrl, Base64.DEFAULT)
-                val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                postImage?.setImageBitmap(bitmap)
-            } catch (e: Exception) {
-                Log.e("Posts", "Error loading post image: ${e.message}")
-            }
-        }
-    }
-
-    private fun handleYourStoryClick() {
-        val currentUser = mAuth.currentUser
-        if (currentUser == null) {
-            Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // Check if user already has an active story
-        storiesRef.orderByChild("userId").equalTo(currentUser.uid).get()
-            .addOnSuccessListener { snapshot ->
-                var hasActiveStory = false
-                var userStory: Story? = null
-
-                for (storySnap in snapshot.children) {
-                    val story = storySnap.getValue(Story::class.java)
-                    if (story != null && !isExpired(story.timestamp)) {
-                        hasActiveStory = true
-                        userStory = story
-                        break
+                for (storySnapshot in snapshot.children) {
+                    val story = storySnapshot.getValue(Story::class.java)
+                    if (story != null && !isExpired(story.timestamp) && userIds.contains(story.userId)) {
+                        if (storiesMap.containsKey(story.userId)) {
+                            storiesMap[story.userId]?.add(story)
+                        } else {
+                            storiesMap[story.userId] = mutableListOf(story)
+                        }
                     }
                 }
 
-                if (hasActiveStory && userStory != null) {
-                    // View your own story
-                    viewStory(userStory)
-                } else {
-                    // No active story, open gallery
-                    openGallery()
-                }
+                loadStoryCircles(storiesMap, userIds)
             }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("Stories", "Error loading stories: ${error.message}")
+            }
+        })
+    }
+
+    private fun loadStoryCircles(storiesMap: Map<String, MutableList<Story>>, userIds: List<String>) {
+        val storyCircles = mutableListOf<StoryCircle>()
+        val currentUserId = mAuth.currentUser?.uid
+
+        if (currentUserId != null) {
+            usersRef.child(currentUserId).get()
+                .addOnSuccessListener { userSnapshot ->
+                    val username = userSnapshot.child("username").value?.toString() ?: "Your Story"
+                    val profileImage = userSnapshot.child("profileImage").value?.toString() ?: ""
+
+                    val myStories = storiesMap[currentUserId]?.sortedByDescending { it.timestamp } ?: emptyList()
+
+                    val myStoryCircle = StoryCircle(
+                        userId = currentUserId,
+                        username = username,
+                        userProfileImage = profileImage,
+                        stories = myStories,
+                        latestStoryTimestamp = myStories.firstOrNull()?.timestamp ?: 0L
+                    )
+
+                    storyCircles.add(myStoryCircle)
+                    loadOtherUsersStoryCircles(storiesMap, userIds, storyCircles)
+                }
+        }
+    }
+
+    private fun loadOtherUsersStoryCircles(
+        storiesMap: Map<String, MutableList<Story>>,
+        userIds: List<String>,
+        storyCircles: MutableList<StoryCircle>
+    ) {
+        val currentUserId = mAuth.currentUser?.uid
+        val otherUserIds = userIds.filter { it != currentUserId && storiesMap.containsKey(it) }
+
+        var loadedCount = 0
+
+        for (userId in otherUserIds) {
+            usersRef.child(userId).get()
+                .addOnSuccessListener { userSnapshot ->
+                    val username = userSnapshot.child("username").value?.toString() ?: "User"
+                    val profileImage = userSnapshot.child("profileImage").value?.toString() ?: ""
+
+                    val userStories = storiesMap[userId]?.sortedByDescending { it.timestamp } ?: emptyList()
+
+                    if (userStories.isNotEmpty()) {
+                        val storyCircle = StoryCircle(
+                            userId = userId,
+                            username = username,
+                            userProfileImage = profileImage,
+                            stories = userStories,
+                            latestStoryTimestamp = userStories.first().timestamp
+                        )
+
+                        storyCircles.add(storyCircle)
+                    }
+
+                    loadedCount++
+
+                    if (loadedCount == otherUserIds.size) {
+                        val sortedCircles = storyCircles.sortedWith(compareByDescending<StoryCircle> {
+                            it.userId == currentUserId
+                        }.thenByDescending {
+                            it.latestStoryTimestamp
+                        })
+
+                        storyCircleAdapter.updateStories(sortedCircles)
+                        Log.d("Stories", "Loaded ${sortedCircles.size} story circles")
+                    }
+                }
+                .addOnFailureListener {
+                    loadedCount++
+                    if (loadedCount == otherUserIds.size) {
+                        val sortedCircles = storyCircles.sortedWith(compareByDescending<StoryCircle> {
+                            it.userId == currentUserId
+                        }.thenByDescending {
+                            it.latestStoryTimestamp
+                        })
+                        storyCircleAdapter.updateStories(sortedCircles)
+                    }
+                }
+        }
+
+        if (otherUserIds.isEmpty()) {
+            storyCircleAdapter.updateStories(storyCircles)
+        }
     }
 
     private fun openGallery() {
@@ -196,7 +261,6 @@ class page_5 : AppCompatActivity() {
         val user = mAuth.currentUser
         val storyId = storiesRef.push().key ?: return
 
-        // Get username from Users database
         database.getReference("Users").child(user?.uid ?: "").get()
             .addOnSuccessListener { snapshot ->
                 val username = snapshot.child("username").value?.toString() ?: "User"
@@ -214,7 +278,6 @@ class page_5 : AppCompatActivity() {
                 storiesRef.child(storyId).setValue(story)
                     .addOnSuccessListener {
                         Toast.makeText(this, "Story uploaded successfully!", Toast.LENGTH_SHORT).show()
-                        loadStories()
                     }
                     .addOnFailureListener {
                         Toast.makeText(this, "Upload failed", Toast.LENGTH_SHORT).show()
@@ -222,65 +285,13 @@ class page_5 : AppCompatActivity() {
             }
     }
 
-    private fun loadStories() {
-        storiesRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val stories = mutableListOf<Story>()
+    private fun viewUserStories(stories: List<Story>) {
+        val sortedStories = stories.sortedBy { it.timestamp }
+        val storyIds = sortedStories.map { it.storyId }.toTypedArray()
 
-                for (storySnapshot in snapshot.children) {
-                    val story = storySnapshot.getValue(Story::class.java)
-                    if (story != null && !isExpired(story.timestamp)) {
-                        stories.add(story)
-                    }
-                }
-
-                // Sort by timestamp (newest first)
-                stories.sortByDescending { it.timestamp }
-
-                // Display up to 3 other users' stories (not yours)
-                val currentUserId = mAuth.currentUser?.uid
-                val otherStories = stories.filter { it.userId != currentUserId }
-
-                // Set click listeners and images for story circles
-                if (otherStories.isNotEmpty()) {
-                    story1.setOnClickListener { viewStory(otherStories[0]) }
-                    // Optionally load story thumbnail
-                    loadStoryThumbnail(otherStories[0], story1)
-                }
-
-                if (otherStories.size > 1) {
-                    story2.setOnClickListener { viewStory(otherStories[1]) }
-                    loadStoryThumbnail(otherStories[1], story2)
-                }
-
-                if (otherStories.size > 2) {
-                    story3.setOnClickListener { viewStory(otherStories[2]) }
-                    loadStoryThumbnail(otherStories[2], story3)
-                }
-
-                Log.d("Stories", "Loaded ${stories.size} active stories")
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("Stories", "Error loading stories: ${error.message}")
-            }
-        })
-    }
-
-    private fun loadStoryThumbnail(story: Story, imageView: ImageView) {
-        try {
-            val imageBytes = Base64.decode(story.imageUrl, Base64.DEFAULT)
-            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-            imageView.setImageBitmap(bitmap)
-        } catch (e: Exception) {
-            Log.e("Stories", "Failed to load thumbnail: ${e.message}")
-        }
-    }
-
-    private fun viewStory(story: Story) {
-        // Only pass the story ID, load image from database in page_14
         val intent = Intent(this, page_14::class.java)
-        intent.putExtra("STORY_ID", story.storyId)
+        intent.putExtra("STORY_IDS", storyIds)
+        intent.putExtra("CURRENT_INDEX", 0)
         startActivity(intent)
     }
 

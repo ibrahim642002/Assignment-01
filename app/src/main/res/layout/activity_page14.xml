@@ -4,56 +4,46 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000">
+    android:background="#000000"
+    >
 
+    <!-- Story Image/Content -->
     <ImageView
-        android:id="@+id/storyContent"
+        android:id="@+id/storyImageView"
         android:layout_width="match_parent"
-        android:layout_height="750dp"
+        android:layout_height="0dp"
         android:scaleType="centerCrop"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="60dp"
+        android:layout_marginTop="80dp"
+        />
 
+    <!-- Top Gradient Overlay -->
     <View
         android:id="@+id/topGradient"
         android:layout_width="match_parent"
         android:layout_height="120dp"
-        android:background="#66000000"
+        android:background="@drawable/gradient_top"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:id="@+id/progressBars"
+    <!-- Progress Bar -->
+    <ProgressBar
+        android:id="@+id/storyProgressBar"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:paddingTop="8dp"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_height="2dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:progressTint="#FFFFFF"
+        android:progressBackgroundTint="#66FFFFFF"
+        android:progress="33"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="2dp"
-            android:layout_weight="1"
-            android:background="#FFFFFF"
-            android:layout_marginEnd="2dp" />
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="2dp"
-            android:layout_weight="1"
-            android:background="#66FFFFFF"
-            android:layout_marginEnd="2dp" />
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="2dp"
-            android:layout_weight="1"
-            android:background="#66FFFFFF"
-            android:layout_marginEnd="2dp" />
-
-    </LinearLayout>
-
+    <!-- Story Header -->
     <LinearLayout
         android:id="@+id/storyHeader"
         android:layout_width="match_parent"
@@ -61,9 +51,10 @@
         android:orientation="horizontal"
         android:padding="12dp"
         android:gravity="center_vertical"
-        app:layout_constraintTop_toBottomOf="@id/progressBars">
+        app:layout_constraintTop_toBottomOf="@id/storyProgressBar">
 
         <ImageView
+            android:id="@+id/storyProfileImage"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@drawable/img_7"
@@ -77,16 +68,16 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/usernameText"
+                android:id="@+id/storyUsername"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="User"
+                android:text="Username"
                 android:textSize="14sp"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/timeText"
+                android:id="@+id/storyTimeText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Just now"
@@ -94,8 +85,17 @@
                 android:textColor="#CCFFFFFF" />
 
         </LinearLayout>
+
+        <ImageView
+            android:id="@+id/closeStoryButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:padding="4dp" />
+
     </LinearLayout>
 
+    <!-- Bottom Controls -->
     <LinearLayout
         android:id="@+id/bottomControls"
         android:layout_width="match_parent"
@@ -117,7 +117,9 @@
             android:src="@drawable/img_86"
             android:layout_marginEnd="20dp" />
 
+        <!-- ✅ ADD ID HERE - This is the "Add Story" button -->
         <ImageView
+            android:id="@+id/addStoryButton"
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:src="@drawable/img_87"
@@ -134,5 +136,27 @@
             android:layout_height="28dp"
             android:src="@drawable/img_90" />
     </LinearLayout>
+
+    <!-- Tap Areas for Navigation -->
+    <View
+        android:id="@+id/leftTapArea"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/rightTapArea"
+        app:layout_constraintWidth_percent="0.3" />
+
+    <View
+        android:id="@+id/rightTapArea"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintWidth_percent="0.7" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

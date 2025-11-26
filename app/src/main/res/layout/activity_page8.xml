@@ -1,27 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".page_8"
-    android:background="@color/white"
-    >
+    android:background="@color/white">
 
+    <!-- Top Header -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
-        android:id="@+id/first"
-        >
+        android:id="@+id/first">
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/img_38"
-            android:layout_marginTop="3dp"/>
+            android:layout_marginTop="3dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -30,7 +27,7 @@
             android:text="jacob_w"
             android:layout_centerInParent="true"
             android:textStyle="bold"
-            android:textSize="25sp"/>
+            android:textSize="25sp" />
 
         <ImageView
             android:layout_width="wrap_content"
@@ -47,6 +44,7 @@
             android:layout_centerVertical="true" />
     </RelativeLayout>
 
+    <!-- Search Bar -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
@@ -58,8 +56,7 @@
             android:layout_height="match_parent"
             android:background="@drawable/custom_button2"
             android:layout_marginLeft="10dp"
-            android:layout_centerInParent="true"
-            />
+            android:layout_centerInParent="true" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -67,271 +64,56 @@
             android:textSize="25sp"
             android:layout_marginLeft="65dp"
             android:layout_centerVertical="true"
-            android:text="Search"/>
-
+            android:text="Search" />
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="28dp"
             android:src="@drawable/img_33"
             android:layout_margin="15dp"
-            android:layout_centerVertical="true"
-            />
-
-
-    </RelativeLayout>
-
-
-    <RelativeLayout
-        android:id="@+id/three"
-        android:layout_marginTop="15dp"
-        android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        android:layout_below="@id/two" >
-
-        <ImageView
-            android:layout_width="70dp"
-            android:layout_height="wrap_content"
-            android:src="@drawable/img_42"
-            android:layout_marginLeft="18dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="joshua_I"
-            android:layout_marginTop="10dp"
-            android:textSize="20sp"
-            android:layout_marginLeft="100dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Have a nice day, bro!                      .now"
-            android:layout_marginTop="33dp"
-            android:textSize="15sp"
-            android:layout_marginLeft="100dp" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/img_43"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true" />
-    </RelativeLayout>
-
-
-    <RelativeLayout
-        android:id="@+id/four"
-        android:layout_marginTop="15dp"
-        android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        android:layout_below="@id/three" >
-
-        <ImageView
-            android:layout_width="70dp"
-            android:layout_height="wrap_content"
-            android:src="@drawable/img_44"
-            android:layout_marginLeft="18dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="karennne"
-            android:layout_marginTop="10dp"
-
-            android:textSize="20sp"
-            android:layout_marginLeft="100dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="I heard this is a good movie,s...   .now"
-            android:layout_marginTop="33dp"
-            android:textSize="15sp"
-            android:layout_marginLeft="100dp" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/img_43"
-            android:layout_alignParentEnd="true"
             android:layout_centerVertical="true" />
 
     </RelativeLayout>
 
-
-    <RelativeLayout
-        android:id="@+id/five"
-        android:layout_marginTop="15dp"
+    <!-- Dynamic Chat List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/chatListRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        android:layout_below="@id/four" >
+        android:layout_height="match_parent"
+        android:layout_below="@id/two"
+        android:layout_above="@id/bottomSection"
+        android:paddingTop="8dp"
+        android:clipToPadding="false" />
 
-        <ImageView
-            android:layout_width="70dp"
-            android:layout_height="wrap_content"
-            android:src="@drawable/img_45"
-            android:layout_marginLeft="18dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="martini_rond"
-            android:layout_marginTop="10dp"
-
-            android:textSize="20sp"
-            android:layout_marginLeft="100dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="See you on the next meeting!     .15m"
-            android:layout_marginTop="33dp"
-            android:textSize="15sp"
-            android:layout_marginLeft="100dp" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/img_43"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true" />
-    </RelativeLayout>
-
-
-    <RelativeLayout
-        android:id="@+id/six"
-        android:layout_marginTop="15dp"
+    <!-- Bottom Camera Section -->
+    <LinearLayout
+        android:id="@+id/bottomSection"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        android:layout_below="@id/five" >
-
-        <ImageView
-            android:layout_width="70dp"
-            android:layout_height="wrap_content"
-            android:src="@drawable/img_46"
-            android:layout_marginLeft="18dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="andrewww"
-            android:layout_marginTop="10dp"
-            android:textSize="20sp"
-            android:layout_marginLeft="100dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sounds good                                 .20m"
-            android:layout_marginTop="33dp"
-            android:textSize="15sp"
-            android:layout_marginLeft="100dp" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/img_43"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true" />
-    </RelativeLayout>
-
-
-    <RelativeLayout
-        android:id="@+id/seven"
-        android:layout_marginTop="15dp"
-        android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        android:layout_below="@id/six" >
-
-        <ImageView
-            android:layout_width="70dp"
-            android:layout_height="wrap_content"
-            android:src="@drawable/img_47"
-            android:layout_marginLeft="18dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="kiero_d"
-            android:layout_marginTop="10dp"
-
-            android:textSize="20sp"
-            android:layout_marginLeft="100dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="The new design looks cool,b...    .1m"
-            android:layout_marginTop="33dp"
-            android:textSize="15sp"
-            android:layout_marginLeft="100dp" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/img_43"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true" />
-    </RelativeLayout>
-
-
-    <RelativeLayout
-        android:id="@+id/eight"
-        android:layout_marginTop="15dp"
-        android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        android:layout_below="@id/seven" >
-
-        <ImageView
-            android:layout_width="70dp"
-            android:layout_height="wrap_content"
-            android:src="@drawable/img_48"
-            android:layout_marginLeft="18dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="maxjacobson"
-            android:layout_marginTop="10dp"
-            android:textSize="20sp"
-            android:layout_marginLeft="100dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Thank you,bro!                               .2h"
-            android:layout_marginTop="33dp"
-            android:textSize="15sp"
-            android:layout_marginLeft="100dp" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/img_43"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true" />
-    </RelativeLayout>
-
-    <ImageView
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/img_49"
-        android:layout_marginTop="800dp"
-        android:layout_marginLeft="120dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Camera"
-        android:textSize="25sp"
-        android:layout_marginTop="800dp"
-        android:layout_centerHorizontal="true" />
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/img"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingBottom="16dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/img_49"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Camera"
+            android:textSize="20sp"
+            android:textColor="#666666"
+            android:layout_marginBottom="8dp" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/img" />
+
+    </LinearLayout>
+
 </RelativeLayout>

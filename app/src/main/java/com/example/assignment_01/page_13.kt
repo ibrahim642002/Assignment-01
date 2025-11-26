@@ -81,11 +81,6 @@ class page_13 : AppCompatActivity() {
             openProfilePictureUpload()
         }
 
-        menuIcon.setOnClickListener {
-            val intent = Intent(this, page_15::class.java)
-            startActivity(intent)
-        }
-
         // Notification icon - open follow requests
         notificationIcon.setOnClickListener {
             openFollowRequests()
@@ -219,23 +214,17 @@ class page_13 : AppCompatActivity() {
     }
 
     private fun displayPostsInGrid(posts: List<Post>) {
-        // Get the number of existing static images (9 in your XML)
-        val staticImageCount = 9
+        // Clear ALL views first
+        photoGrid.removeAllViews()
 
-        // Remove only previously added dynamic images (if any)
-        val currentChildCount = photoGrid.childCount
-        if (currentChildCount > staticImageCount) {
-            photoGrid.removeViews(0, currentChildCount - staticImageCount)
-        }
-
-        // Add new posts at the beginning
-        for ((index, post) in posts.withIndex()) {
+        // Add new posts
+        for (post in posts) {
             val imageView = ImageView(this)
 
-            // Set layout params to match existing grid items
+            // Set layout params to match grid
             val params = GridLayout.LayoutParams()
             params.width = 0
-            params.height = resources.displayMetrics.widthPixels / 3 - 4 // Square based on screen width
+            params.height = resources.displayMetrics.widthPixels / 3 - 4
             params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
             params.setMargins(2, 2, 2, 2)
             imageView.layoutParams = params
@@ -249,7 +238,6 @@ class page_13 : AppCompatActivity() {
                 imageView.setImageBitmap(bitmap)
             } catch (e: Exception) {
                 Log.e("Profile", "Error decoding image: ${e.message}")
-                imageView.setImageResource(R.drawable.img_78) // Fallback image
             }
 
             // Click listener to view post details
@@ -257,23 +245,17 @@ class page_13 : AppCompatActivity() {
                 viewPostDetails(post)
             }
 
-            // Add at the beginning (index 0, 1, 2, ...)
-            photoGrid.addView(imageView, index)
+            // Add to grid
+            photoGrid.addView(imageView)
         }
     }
 
     private fun viewPostDetails(post: Post) {
-        // Show post details in a toast for now
         Toast.makeText(
             this,
             "Caption: ${post.caption}\nLocation: ${post.location}",
             Toast.LENGTH_SHORT
         ).show()
-
-        // Optional: Create a PostDetailActivity to show full post
-        // val intent = Intent(this, PostDetailActivity::class.java)
-        // intent.putExtra("POST_ID", post.postId)
-        // startActivity(intent)
     }
 
     private fun openUploadPost() {
@@ -293,26 +275,18 @@ class page_13 : AppCompatActivity() {
 
     private fun openFollowersList(type: String) {
         val intent = Intent(this, FollowersListActivity::class.java)
-        intent.putExtra("LIST_TYPE", type) // "followers" or "following"
+        intent.putExtra("LIST_TYPE", type)
         startActivity(intent)
     }
 
     override fun onResume() {
         super.onResume()
-        // Reload posts when returning to profile
         loadUserPosts()
-        // Set user online again
         PresenceManager.setUserOnline()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        // Don't set offline on pause, only on destroy
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        // Set user offline when app is closed
         PresenceManager.setUserOffline()
     }
 }
